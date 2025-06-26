@@ -20,12 +20,15 @@
 4. 點選 **Calculate** 按鈕，系統會顯示劑量與風險估算結果。
 
 ## ⚠ 注意事項
-> 本工具估算結果僅供群體統計風險參考，不能作為個人癌症風險診斷或預測之用。實際風險可能因個人年齡、性別、體質、生活型態等因素而有所不同。
+
+❗ **本工具估算結果僅供群體統計風險參考，不能作為個人癌症風險診斷或預測之用。**
+
+實際風險可能因個人年齡、性別、體質、生活型態等因素而有所不同。
 
 ## 📚 參考資料
 - [AAPM Report 96 (TG 204)](https://www.aapm.org/pubs/reports/RPT_96.pdf)
 - [BEIR VII Phase 2 Report](https://nap.nationalacademies.org/read/11340/chapter/14)
 
-## 💡 作者
+## 💡 
 此工具為教育用途設計。  
 若有建議或問題，歡迎開 issue 或提交 pull request。
