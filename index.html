@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>DLP to mSv (AAPM Age-adjusted)</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+    label, select, input { display: block; margin: 10px 0; }
+    .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 30px; }
+    th, td { border: 1px solid #999; padding: 8px; text-align: center; }
+    thead { background-color: #f0f0f0; }
+    h3 { margin-top: 40px; }
+    .references { margin-top: 20px; font-size: 0.9em; }
+    .caution {
+      color: red;
+      font-weight: bold;
+      font-size: 1.1em;
+      border: 1px solid red;
+      padding: 8px;
+      background-color: #ffeaea;
+    }
+  </style>
+</head>
+<body>
+
+<h2>DLP to mSv Estimator (AAPM Age-adjusted)</h2>
+
+<label for="dlp">Total DLP (mGy·cm):</label>
+<input type="number" id="dlp" placeholder="Enter total DLP">
+
+<label for="region">CT Region:</label>
+<select id="region">
+    <option value="headneck">Head and Neck</option>
+    <option value="head">Head</option>
+    <option value="neck">Neck</option>
+    <option value="chest">Chest</option>
+    <option value="abdopelvis">Abdomen and Pelvis</option>
+    <option value="trunk" selected>Trunk</option> <!-- 設定為預設 -->
+</select>
+
+<label for="age">Age Group:</label>
+<select id="age">
+    <option value="0">0 year old</option>
+    <option value="1">1 year old</option>
+    <option value="5">5 year old</option>
+    <option value="10">10 year old</option>
+    <option value="adult" selected>Adult</option>
+</select>
+
+<button onclick="calculate()">Calculate</button>
+
+<div class="result" id="output"></div>
+<div class="result" id="larOutput"></div>
+<div class="references" style="margin-top:10px; color:#555;">
+  <p>備註：以上估算結果基於 BEIR VII 報告的統計模型，採線性無閾值假設（LNT model）進行風險推估，僅供群體風險評估參考。個別患者實際癌症風險可能因年齡、性別、體質、生活型態等因素而有所不同，結果不適用於個人具體癌症預測。</p>
+</div>
+
+<h3 style="margin-bottom: 0;">Lifetime Attributable Risk (LAR) per 100 mSv Exposure</h3>
+<h3 style="margin-top: 0;">(每接受 100 mSv 輻射劑量所估算的終生癌症可歸因風險)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>暴露時的年齡</th>
+      <th>癌症類型</th>
+      <th>癌症發生率<br>(LAR / 100,000)</th>
+      <th>癌症死亡率<br>(LAR / 100,000)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="2">20 歲</td>
+      <td>所有實體癌</td>
+      <td>2525</td>
+      <td>1051</td>
+    </tr>
+    <tr>
+      <td>白血病</td>
+      <td>86</td>
+      <td>53</td>
+    </tr>
+    <tr style="font-weight: bold;">
+      <td>20 歲</td>
+      <td>所有癌症（合計）</td>
+      <td>2611</td>
+      <td>1104</td>
+    </tr>
+    <tr>
+      <td rowspan="2">50 歲</td>
+      <td>所有實體癌</td>
+      <td>1002</td>
+      <td>491</td>
+    </tr>
+    <tr>
+      <td>白血病</td>
+      <td>63</td>
+      <td>51</td>
+    </tr>
+    <tr style="font-weight: bold;">
+      <td>50 歲</td>
+      <td>所有癌症（合計）</td>
+      <td>1065</td>
+      <td>542</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="references">
+  <p>參考資料：</p>
+  <ul>
+    <li>
+      AAPM Report on Radiation Dose Reporting (TG 204)
+    </li>
+    <li>
+      BEIR VII Phase 2 Report – 
+      <a href="https://nap.nationalacademies.org/read/11340/chapter/14" target="_blank">
+        National Academies Press (LAR Table 12D-1)
+      </a>
+    </li>
+    <li>
+        AAPM Report 96 (TG 204): 
+        <a href="https://www.aapm.org/pubs/reports/RPT_96.pdf" target="_blank">
+          Radiation Dose Reporting PDF
+        </a>
+      </li>
+  
+  </ul>
+</div>
+
+<div class="caution">
+  <p>本頁風險數值為統計風險推估，用於醫療影像群體風險溝通，請勿作為個人診斷或預測之用。 </p>
+  
+</div>
+
+<script>
+const kValues = {
+  headneck:    { "0": 0.013, "1": 0.0085, "5": 0.0057, "10": 0.0042, "adult": 0.0031 },
+  head:        { "0": 0.011, "1": 0.0067, "5": 0.0040, "10": 0.0032, "adult": 0.0021 },
+  neck:        { "0": 0.017, "1": 0.012,  "5": 0.011,  "10": 0.0079, "adult": 0.0059 },
+  chest:       { "0": 0.039, "1": 0.026,  "5": 0.018,  "10": 0.013, "adult": 0.014 },
+  abdopelvis:  { "0": 0.049, "1": 0.030,  "5": 0.020,  "10": 0.015, "adult": 0.015 },
+  trunk:       { "0": 0.044, "1": 0.028,  "5": 0.019,  "10": 0.014, "adult": 0.015 }
+};
+
+function calculate() {
+  const dlp = parseFloat(document.getElementById("dlp").value);
+  const region = document.getElementById("region").value;
+  const age = document.getElementById("age").value;
+
+  if (isNaN(dlp)) {
+    document.getElementById("output").innerText = "請輸入有效的 DLP 數值。";
+    document.getElementById("larOutput").innerText = "";
+    return;
+  }
+
+  const k = kValues[region][age];
+  const mSv = dlp * k;
+
+  document.getElementById("output").innerHTML =
+    `依據選擇的部位與年齡，估算等效劑量為：<strong style="color: red;">${mSv.toFixed(2)} mSv</strong>`;
+
+  const baseLAR = 1.065; // 假設 50 歲基準
+  const lar = (mSv / 100) * baseLAR;
+
+  let needed = lar > 0 ? (100 / lar) : "∞";
+  needed = (typeof needed === "number") ? Math.round(needed).toLocaleString() : needed;
+
+  document.getElementById("larOutput").innerHTML =
+  `依線性模型估算的終生癌症可歸因風險：<strong style="color: red;">${lar.toFixed(3)}%</strong><br>` +
+  `約需 <strong style="color: red;">${needed}</strong> 位成年患者各自接受此劑量輻射，統計上平均預期會有 1 例輻射誘發癌症。<br>` +
+  `<span style="font-size: 0.9em; color: #555;">（以 BEIR VII 50 歲成年人全癌症 1.065% per 100 mSv 作為基準線性外推計算）</span>`;
+}
+</script>
+
+</body>
+</html>
